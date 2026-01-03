@@ -1,0 +1,45 @@
+gut_data <- read_excel("gut_barrier_cfrna.xlsx")
+dim(gut_data
+data <- gut_data %>%
+mutate(
+Expression = case_when(
+Fold_change > 1 & pvalue < 0.05 ~ "Up-regulated",
+Fold_change < -1 & pvalue < 0.05 ~ "Down-regulated",
+TRUE ~ "Not significant"
+),
+Expression = factor(
+Expression,
+levels = c("Down-regulated", "Not significant", "Up-regulated")
+)
+)
+head(data)
+p2 <- ggplot(data, aes(x = Fold_change, y = -log10(pvalue))) +
+geom_point(aes(color = Expression)) +
+xlab("Fold Change") +
+ylab(expression(-log[10]("p-value"))) +
+scale_color_manual(
+values = c(
+"Down-regulated" = "blue",
+"Not significant" = "gray50",
+"Up-regulated" = "firebrick3"
+)
+) +
+theme_minimal() +
+theme(
+legend.title = element_blank(),
+plot.title = element_text(hjust = 0.5)
+) +
+ggtitle("Volcano Plot of Gut Barrier Genes")
+p2
+top_genes <- data %>%
+filter(Expression %in% c("Up-regulated", "Down-regulated"))
+p3 <- p2 +
+geom_label_repel(
+data = top_genes,
+aes(label = Feature.ID),
+size = 2.2,
+label.size = NA,
+fill = NA
+)
+p3
+
